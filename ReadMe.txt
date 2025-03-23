@@ -1,0 +1,1 @@
+Discord bot designed to rank pinned messages in a server
