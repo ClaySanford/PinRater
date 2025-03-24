@@ -1,7 +1,7 @@
 import os
 import discord
 import random
-
+import ranking.py
 #Get API key from API.env (This is not the safest way to do this)
 try:
     f = open("API.env", "r")
@@ -58,24 +58,28 @@ def PinSani(message):
 
 async def GetMsg(GenChans, ID):
     for channel in GenChans:
-        print(type(channel))
         try:
             message = await channel.fetch_message(id=ID)
-            print("Message found!")
-            print(type(message))
-            print(message)
             return message
         except:
             pass
-        print("Message with ID " + str(ID) + " not found!")
+    raise MsgNotFound
 
 async def PrintList(channel, GenChans):
-    print(type(channel))
     reader = open("PinList.txt", 'r')
+    found = 0
+    notfound = 0
     for line in reader:
-        message = await GetMsg(GenChans, line)
-        message = PinSani(message)
-        await channel.send(message)
+        try: 
+            message = await GetMsg(GenChans, line)
+            found += 1
+            print(str(found) + " messages found!")
+            message = PinSani(message)
+            await channel.send(message)
+        except:
+            notfound += 1
+            print(str(notfound) + " messages not found.")
+            LostIDs.append(line)
 
 
 client = discord.Client(intents=discord.Intents.default())
@@ -102,6 +106,7 @@ async def on_message(message):
         Gen5 = await client.fetch_channel(CHANS[4])
         GenChans = [Gen1, Gen2, Gen3, Gen4, Gen5]
         await PrintList(message.channel, GenChans)
+        print(LostIDs)
 
 
 #**************************************
