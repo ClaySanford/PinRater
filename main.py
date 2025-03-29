@@ -13,7 +13,7 @@ EMOJI2SLASH = "🟦"
 
 #Get API key from API.env (This is not the safest way to do this)
 try:
-    f = open("API.env", "r")
+    f = open("environment/API.env", "r")
     TOKEN = str(f.read())
     f.close()
 except:
@@ -21,7 +21,7 @@ except:
     exit()
 
 try:
-    f = open("guild.env", 'r')
+    f = open("environment/guild.env", 'r')
     GUILD = int(f.read())
     f.close()
 except:
@@ -29,7 +29,7 @@ except:
     exit()
 
 try:
-    f = open("channels.env", 'r')
+    f = open("environment/channels.env", 'r')
     CHANS = []
     for line in f:
         CHANS.append(int(line))
@@ -39,7 +39,7 @@ except:
     exit()
 
 try:
-    f = open("user.env", 'r')
+    f = open("environment/user.env", 'r')
     USER_TOKEN = str(f.read())
     f.close()
 except:
@@ -51,20 +51,20 @@ async def PinGrab(message): #Grab all pins from every chat with "general" in the
     ExtPins = []
     #Put all existing pins into array:
     reader = open("PinList.txt", 'r')
+    writer = open("PinList.txt", 'w')
     for line in reader:
         ExtPins.append(line)
     reader.close()
     for channel in message.guild.channels:
         if "NAME_TOKEN" in channel.name:
             AllPins = await channel.pins()
-            writer = open("PinList.txt", 'a')
             print(AllPins[0])
             for i in range(len(AllPins)):
                 if AllPins[i] not in ExtPins:
                     print(str(AllPins[i].id))
                     writer.write(str(AllPins[i].id))
                     writer.write("\n")
-            writer.close()
+    writer.close()
     
 def PinSani(message): #Format discord message to be style of name: message fileurl fileurl... fileurl
     attachments = message.attachments
@@ -76,16 +76,16 @@ def PinSani(message): #Format discord message to be style of name: message fileu
 
 async def GetMsg(ID): #Check all given general channels for the specified comment. Raise an error if message not in any channels.
     ID = int(ID)
-    print(GenChans)
+    #print(GenChans)
     for channel in GenChans:
         try:
-            print(channel)
+            #print(channel)
             message = await channel.fetch_message(id=ID)
             return message
         except:
             pass
-    print(ID)
-    print(type(ID))
+    #print(ID)
+    #print(type(ID))
     raise MsgNotFound
 
 async def PrintList(channel): #DEBUG: print all of a list
@@ -110,15 +110,15 @@ async def GetVote(Pair, channel, match): #Sets up the vote
     await channel.send(content=prologue)
 
     if (Pair.A == Pair.B): #If both items are the same, this isn't a vote, this is an empty round (rng do be like that)
-        await channel.send(content="This is an empty round! Oops!")
+        await channel.send(content="This is an empty round! Everybody loses!!!")
         return
     
     if (Pair.A == 0):
         try:
             await channel.send(content="This is a bye round! Does this pin deserve to live?")
             WinMsg = await GetMsg(Pair.B)
-            WinMsgTxt = EMOJI1 +  PinSani(WinMsg)
-            LoseMsgTxt = EMOJI2 + "Delete this pin!"
+            WinMsgTxt = EMOJI2 +  PinSani(WinMsg)
+            LoseMsgTxt = EMOJI1 + "Delete this pin!"
             await channel.send(content=WinMsgTxt)
             await channel.send(LoseMsgTxt)
         except:
@@ -129,13 +129,13 @@ async def GetVote(Pair, channel, match): #Sets up the vote
         try:
             await channel.send(content="This is a bye round! Does this pin deserve to live?")
             WinMsg = await GetMsg(Pair.A)
-            WinMsgTxt = EMOJI2 + PinSani(WinMsg)
-            LoseMsgTxt = EMOJI1 + "Delete this pin!"
+            WinMsgTxt = EMOJI1 + PinSani(WinMsg)
+            LoseMsgTxt = EMOJI2 + "Delete this pin!"
             await channel.send(WinMsgTxt)
             await channel.send(LoseMsgTxt)
 
         except:
-            ("Failed to load A")
+            print("Failed to load A")
 
     else:
         try:
@@ -151,7 +151,9 @@ async def GetVote(Pair, channel, match): #Sets up the vote
     
     VoteMsg = await channel.send("Vote here!")
     await VoteMsg.add_reaction(EMOJI1SLASH)
-    await VoteMsg.add_reaction(EMOJI2SLASH)      
+    await VoteMsg.add_reaction(EMOJI2SLASH)
+    
+    return str(VoteMsg.id) + " " + str(Pair.A) + " " + str(Pair.B) + "\n"
 
 
 async def PrintWinner(winner, channel):
@@ -175,7 +177,7 @@ async def on_ready():
 async def on_message(message):
     if message.author == client.user: #Don't loop
         return
-    if message.content[0] != "!": #! os command character
+    if message.content[0] != "!": #! as command character
         return
 
     parsed_message = message.content.lower().split()
@@ -205,20 +207,60 @@ async def on_message(message):
         #print(count)
         rank.BracketFill(IDList)
         #print(IDList)
-        rank.BracketShuffle(IDList)
+        if (parsed_message[1] == "shuffle"):
+            print("Every day I'm shuffling!")
+            rank.BracketShuffle(IDList)
         #print(IDList)
 
     if ((parsed_message[0] == "!rank") & (str(message.author.name) == USER_TOKEN)): #If admin says to, display the ranked options
         #print("Heard")
         PairList = []
+        CurrentFile = open("CurrentMatch.txt", 'w')
         if (len(IDList) > 1):
             for i in range(int(len(IDList)/2)):
                 print(i)
                 PairList.append(rank.pair(IDList[i*2], IDList[i*2 + 1]))
             for i in range(len(PairList)):
-                await GetVote(PairList[i], message.channel, i)
+                CurrMatch = await GetVote(PairList[i], message.channel, i)
+                CurrentFile.write(CurrMatch)
+            CurrentFile.close()
         else:
             await PrintWinner(IDList[0], message.channel)
+
+    if ((parsed_message[0] == "!getresults") & (str(message.author.name) == USER_TOKEN)): #Separate into a win list and a lose list
+        CurrentList = []
+        CurrentFile = open("CurrentMatch.txt", 'r')
+        WinnerList = open("WinnerList.txt", 'w')
+        LoserList = open("LoserList.txt", 'w')
+        for i,line in enumerate(CurrentFile):
+            CurrentList.append(line.split())
+            #print(CurrentList[i]) #This should be the voting message ID
+            #print(CurrentList[i][0])
+            ID = int(CurrentList[i][0])
+            CurrVote = await message.channel.fetch_message(id=ID)
+            Reacts = CurrVote.reactions
+            #print(Reacts)
+            if (Reacts[0].emoji == '🟥'):
+                #print("Red first")
+                RedReacts = Reacts[0].count
+                #print(RedReacts)
+                BlueReacts = Reacts[1].count
+            elif (Reacts[1].emoji == '🟥'):
+                print("Blue first")
+                RedReacts = Reacts[1].count
+                BlueReacts = Reacts[0].count
+            else:
+                print("Invalid read...")
+            Match = rank.match(CurrentList[i][0], CurrentList[i][1], CurrentList[i][2], RedReacts, BlueReacts)
+            Winner, Loser = Match.elaborate()
+            WinnerList.write(str(Winner + "\n"))
+            LoserList.write(str(Loser + "\n"))
+        CurrentFile.close()
+        WinnerList.close()
+        LoserList.close()
+        print("All matches evaluated. Winners in WinnerList.txt, losers in LoserList.txt.")
+        
+        
 
 
 #**************************************
