@@ -267,7 +267,7 @@ async def on_message(message):
     if((parsed_message[0] == "!movedata") & (str(message.author.name) == USER_TOKEN)):
         WinFile = open("WinnerList.txt", 'r')
         PinFile = open("Pinlist.txt", 'w')
-        for lin in WinFile:
+        for line in WinFile:
             PinFile.write(line)
         print("Data moved.")
         
