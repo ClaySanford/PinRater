@@ -165,13 +165,11 @@ client = discord.Client(intents=discord.Intents.default())
 async def on_ready():
     print(f'{client.user.name} has connected to Discord!')
     random.seed()
-    Gen1 = await client.fetch_channel(CHANS[0])
-    Gen2 = await client.fetch_channel(CHANS[1])
-    Gen3 = await client.fetch_channel(CHANS[2])
-    Gen4 = await client.fetch_channel(CHANS[3])
-    Gen5 = await client.fetch_channel(CHANS[4])
     global GenChans
-    GenChans = [Gen1, Gen2, Gen3, Gen4, Gen5]
+    GenChans = []
+    for Gen in CHANS:
+        GenChan = await client.fetch_channel(Gen)
+        GenChans.append(GenChan)
 
 @client.event
 async def on_message(message):
@@ -188,12 +186,14 @@ async def on_message(message):
         
         
     if (parsed_message[0] == "!print"): #Debug printing
+        """
         Gen1 = await client.fetch_channel(CHANS[0])
         Gen2 = await client.fetch_channel(CHANS[1])
         Gen3 = await client.fetch_channel(CHANS[2])
         Gen4 = await client.fetch_channel(CHANS[3])
         Gen5 = await client.fetch_channel(CHANS[4])
         GenChans = [Gen1, Gen2, Gen3, Gen4, Gen5]
+        """
         await PrintList(message.channel)
         
 
@@ -207,9 +207,10 @@ async def on_message(message):
         #print(count)
         rank.BracketFill(IDList)
         #print(IDList)
-        if (parsed_message[1] == "shuffle"):
-            print("Every day I'm shuffling!")
-            rank.BracketShuffle(IDList)
+        if (len(parsed_message) > 1):
+            if (parsed_message[1] == "shuffle"):
+                print("Every day I'm shuffling!")
+                rank.BracketShuffle(IDList)
         #print(IDList)
 
     if ((parsed_message[0] == "!rank") & (str(message.author.name) == USER_TOKEN)): #If admin says to, display the ranked options
