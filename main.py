@@ -200,6 +200,7 @@ async def on_message(message):
     if ((parsed_message[0] == "!bracket") & (str(message.author.name) == USER_TOKEN)): #If admin says to, shuffle the bracket and fill it out to a power of 2
         reader = open("PinList.txt", 'r')
         #print("Heard Bracket")
+        IDList.clear()
         for line in reader:
             IDList.append(int(line))
         #print(IDList)
