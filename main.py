@@ -158,8 +158,9 @@ async def GetVote(Pair, channel, match): #Sets up the vote
 
 async def PrintWinner(winner, channel):
     await channel.send("Based on an exceptionally lengthy voting process, this is democratically the funniest joke:") #TODO: make the winner print
-    funnyjoke = GetMsg(winner)
-    await channel.send(content=funnyjoke)
+    funnyjoke = await GetMsg(winner)
+    funnyjoke = PinSani(funnyjoke)
+    await channel.send(funnyjoke)
     await channel.send("You truly have shit taste.")
 
 client = discord.Client(intents=discord.Intents.default())
