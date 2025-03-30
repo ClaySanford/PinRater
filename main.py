@@ -264,7 +264,7 @@ async def on_message(message):
         LoserList.close()
         print("All matches evaluated. Winners in WinnerList.txt, losers in LoserList.txt.")
 
-    if((parsed_message[0] == "!movedata" & (str(message.author.name) == USER_TOKEN)):
+    if((parsed_message[0] == "!movedata") & (str(message.author.name) == USER_TOKEN)):
         WinFile = open("WinnerList.txt", 'r')
         PinFile = open("Pinlist.txt", 'w')
         for lin in WinFile:
