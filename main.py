@@ -213,6 +213,7 @@ async def on_message(message):
                 print("Every day I'm shuffling!")
                 rank.BracketShuffle(IDList)
         #print(IDList)
+        print("Messages bracketed.")
 
     if ((parsed_message[0] == "!rank") & (str(message.author.name) == USER_TOKEN)): #If admin says to, display the ranked options
         #print("Heard")
@@ -228,6 +229,7 @@ async def on_message(message):
             CurrentFile.close()
         else:
             await PrintWinner(IDList[0], message.channel)
+        print("Ranking completed.")
 
     if ((parsed_message[0] == "!getresults") & (str(message.author.name) == USER_TOKEN)): #Separate into a win list and a lose list
         CurrentList = []
@@ -261,6 +263,13 @@ async def on_message(message):
         WinnerList.close()
         LoserList.close()
         print("All matches evaluated. Winners in WinnerList.txt, losers in LoserList.txt.")
+
+    if((parsed_message[0] == "!movedata" & (str(message.author.name) == USER_TOKEN)):
+        WinFile = open("WinnerList.txt", 'r')
+        PinFile = open("Pinlist.txt", 'w')
+        for lin in WinFile:
+            PinFile.write(line)
+        print("Data moved.")
         
         
 
